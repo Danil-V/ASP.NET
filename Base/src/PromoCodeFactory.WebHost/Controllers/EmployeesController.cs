@@ -85,7 +85,8 @@ namespace PromoCodeFactory.WebHost.Controllers
             if (newEmployeeData == null)
                 return BadRequest("Invalid employee data");
 
-            var newEmployee = await _employeeService.EmployeeCreateDtoAsync(newEmployeeData);
+            var employeeId = Guid.NewGuid();
+            var newEmployee = await _employeeService.EmployeeGetDtoAsync(employeeId, newEmployeeData);
             var employeeCreated = _employeeRepository.CreateAsync(newEmployee);
 
             if (employeeCreated != null)
@@ -104,8 +105,8 @@ namespace PromoCodeFactory.WebHost.Controllers
         {
             if (updateEmployeeData == null)
                 return BadRequest("Invalid employee data.");
-
-            var employee = await _employeeService.EmployeeUpdateDtoAsync(id, updateEmployeeData);
+            
+            var employee = await _employeeService.EmployeeGetDtoAsync(id, updateEmployeeData);
             var result = await _employeeRepository.UpdateAsync(employee);
 
             if (result != null)
