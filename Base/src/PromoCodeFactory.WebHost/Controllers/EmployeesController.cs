@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using PromoCodeFactory.Core.Abstractions.Repositories;
 using PromoCodeFactory.Core.Domain.Administration;
+using PromoCodeFactory.Sevices.Interfaces;
+using PromoCodeFactory.Sevices.Sevices;
 using PromoCodeFactory.WebHost.Models;
+
 
 namespace PromoCodeFactory.WebHost.Controllers
 {
@@ -17,10 +20,11 @@ namespace PromoCodeFactory.WebHost.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly IRepository<Employee> _employeeRepository;
+        private readonly IEmployeeService _employeeService;
 
-        public EmployeesController(IRepository<Employee> employeeRepository)
-        {
+        public EmployeesController(IRepository<Employee> employeeRepository)   {
             _employeeRepository = employeeRepository;
+            _employeeService = new EmployeeService(employeeRepository);
         }
 
         /// <summary>
@@ -71,31 +75,23 @@ namespace PromoCodeFactory.WebHost.Controllers
             return employeeModel;
         }
 
-        #region Homework 1:
         /// <summary>
         /// Добавить нового сотрудника
         /// </summary>
         /// <returns></returns>
         [HttpPost]
         [Route("add")]
-        public async Task<IActionResult> AddEmployeeAsync([FromBody] Employee newEmployee)
-        {
-            if (newEmployee == null)
-            {
+        public async Task<IActionResult> AddEmployeeAsync(EmployeeRequest newEmployeeData) {
+            if (newEmployeeData == null)
                 return BadRequest("Invalid employee data");
-            }
 
-            newEmployee.Id = Guid.NewGuid();
-            var employeeCreated = await _employeeRepository.CreateAsync(newEmployee);
+            var newEmployee = await _employeeService.EmployeeCreateDtoAsync(newEmployeeData);
+            var employeeCreated = _employeeRepository.CreateAsync(newEmployee);
 
             if (employeeCreated != null)
-            {
                 return Ok("Employee has been successfully edded");
-            }
             else
-            {
                 return StatusCode(500, "An error occurred while adding the employee.");
-            }
         }
 
         /// <summary>
@@ -104,22 +100,18 @@ namespace PromoCodeFactory.WebHost.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("update/{id:guid}")]
-        public async Task<IActionResult> UpdateEmployeeAsync(Guid id, [FromBody] Employee updateEmployeeData)
+        public async Task<IActionResult> UpdateEmployeeAsync(Guid id, EmployeeRequest updateEmployeeData)
         {
             if (updateEmployeeData == null)
-            {
                 return BadRequest("Invalid employee data.");
-            }
-            updateEmployeeData.Id = id;
-            var result = await _employeeRepository.UpdateAsync(updateEmployeeData);
+
+            var employee = await _employeeService.EmployeeUpdateDtoAsync(id, updateEmployeeData);
+            var result = await _employeeRepository.UpdateAsync(employee);
+
             if (result != null)
-            {
                 return Ok(result);
-            }
             else
-            {
                 return NotFound($"Employee with ID: {id} not found");
-            }
         }
 
         /// <summary>
@@ -133,14 +125,9 @@ namespace PromoCodeFactory.WebHost.Controllers
             var result = await _employeeRepository.DeleteAsync(id);
 
             if (result)
-            {
                 return Ok($"Employee with ID: {id} was successful deleted.");
-            }
             else
-            {
                 return NotFound($"Employee with ID: {id} not found");
-            }
         }
-        #endregion
     }
 }

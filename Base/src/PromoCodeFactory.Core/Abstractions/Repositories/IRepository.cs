@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PromoCodeFactory.Core.Domain;
+using PromoCodeFactory.Core.Domain.Administration;
 
 namespace PromoCodeFactory.Core.Abstractions.Repositories
 {
@@ -11,10 +12,8 @@ namespace PromoCodeFactory.Core.Abstractions.Repositories
 
         Task<T> GetByIdAsync(Guid id);
 
-        #region Homework 1
         Task<T> CreateAsync(T entity);
         Task<T> UpdateAsync(T entity);
         Task<bool> DeleteAsync(Guid id);
-        #endregion
     }
 }
