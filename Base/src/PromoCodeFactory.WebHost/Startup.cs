@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PromoCodeFactory.Core.Abstractions.Repositories;
 using PromoCodeFactory.Core.Domain.Administration;
+using PromoCodeFactory.Core.Domain.PromoCodeManagement;
 using PromoCodeFactory.DataAccess.Data;
 using PromoCodeFactory.DataAccess.Repositories;
 using PromoCodeFactory.Sevices.Interfaces;
@@ -20,6 +21,11 @@ namespace PromoCodeFactory.WebHost
                 new InMemoryRepository<Employee>(FakeDataFactory.Employees));
             services.AddSingleton(typeof(IRepository<Role>), (x) => 
                 new InMemoryRepository<Role>(FakeDataFactory.Roles));
+            services.AddScoped(typeof(IRepository<Preference>), (x) =>
+               new InMemoryRepository<Preference>(FakeDataFactory.Preferences));
+            services.AddScoped(typeof(IRepository<Customer>), (x) =>
+                new InMemoryRepository<Customer>(FakeDataFactory.Customers));
+
             services.AddScoped<IEmployeeService, EmployeeService>();
             
             services.AddOpenApiDocument(options =>

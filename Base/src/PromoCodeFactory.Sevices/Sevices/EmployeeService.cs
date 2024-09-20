@@ -15,25 +15,21 @@ namespace PromoCodeFactory.Sevices.Sevices
             _employeeRepository = employeeRepository;
         }
 
-        public async Task<Employee> EmployeeGetDtoAsync(Guid id, EmployeeRequest employeeWebData)
-        {
+        public async Task<Employee> EmployeeGetDtoAsync(Guid id, EmployeeRequest employeeWebData) {
             List<Role> roles = new List<Role>();
             var employee = new Employee();
-            var role = new Role
-            {
+            var role = new Role {
                 Name = employeeWebData.RoleName,
                 Description = employeeWebData.RoleDescription
             };
             roles.Add(role);
 
-            if (employeeWebData != null)
-            {
+            if (employeeWebData != null) {
                 employee.Id = id;
                 employee.FirstName = employeeWebData.FirstName;
                 employee.LastName = employeeWebData.LastName;
                 employee.Email = employeeWebData.Email;
-                employee.Roles = roles.Select(x => new Role()
-                {
+                employee.Roles = roles.Select(x => new Role() {
                     Name = x.Name,
                     Description = x.Description
                 }).ToList();
