@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PromoCodeFactory.Core.Abstractions.Repositories;
@@ -9,14 +11,20 @@ using PromoCodeFactory.DataAccess.Data;
 using PromoCodeFactory.DataAccess.Repositories;
 using PromoCodeFactory.Sevices.Interfaces;
 using PromoCodeFactory.Sevices.Sevices;
-
 namespace PromoCodeFactory.WebHost
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            // Подключение своиъ сервисов:
             services.AddSingleton(typeof(IRepository<Employee>), (x) => 
                 new InMemoryRepository<Employee>(FakeDataFactory.Employees));
             services.AddSingleton(typeof(IRepository<Role>), (x) => 
@@ -25,9 +33,10 @@ namespace PromoCodeFactory.WebHost
                new InMemoryRepository<Preference>(FakeDataFactory.Preferences));
             services.AddScoped(typeof(IRepository<Customer>), (x) =>
                 new InMemoryRepository<Customer>(FakeDataFactory.Customers));
-
             services.AddScoped<IEmployeeService, EmployeeService>();
-            
+           
+
+            services.AddControllers();
             services.AddOpenApiDocument(options =>
             {
                 options.Title = "PromoCode Factory API Doc";

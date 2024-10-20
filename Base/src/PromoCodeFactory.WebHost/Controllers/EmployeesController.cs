@@ -81,7 +81,7 @@ namespace PromoCodeFactory.WebHost.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("add")]
-        public async Task<IActionResult> AddEmployeeAsync(EmployeeRequest newEmployeeData) {
+        public async Task<IActionResult> AddEmployeeAsync(ShortEmployee newEmployeeData) {
             if (newEmployeeData == null)
                 return BadRequest("Invalid employee data");
 
@@ -101,7 +101,7 @@ namespace PromoCodeFactory.WebHost.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("update/{id:guid}")]
-        public async Task<IActionResult> UpdateEmployeeAsync(Guid id, EmployeeRequest updateEmployeeData)
+        public async Task<IActionResult> UpdateEmployeeAsync(Guid id, ShortEmployee updateEmployeeData)
         {
             if (updateEmployeeData == null)
                 return BadRequest("Invalid employee data.");

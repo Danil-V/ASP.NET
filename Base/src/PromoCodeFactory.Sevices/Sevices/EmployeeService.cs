@@ -1,7 +1,6 @@
 ﻿using PromoCodeFactory.Core.Abstractions.Repositories;
 using PromoCodeFactory.Core.Domain.Administration;
 using PromoCodeFactory.Sevices.Interfaces;
-using PromoCodeFactory.WebHost.Models;
 using System.Data;
 
 namespace PromoCodeFactory.Sevices.Sevices
@@ -15,7 +14,7 @@ namespace PromoCodeFactory.Sevices.Sevices
             _employeeRepository = employeeRepository;
         }
 
-        public async Task<Employee> EmployeeGetDtoAsync(Guid id, EmployeeRequest employeeWebData) {
+        public async Task<Employee> EmployeeGetDtoAsync(Guid id, ShortEmployee employeeWebData) {
             List<Role> roles = new List<Role>();
             var employee = new Employee();
             var role = new Role {
@@ -29,10 +28,10 @@ namespace PromoCodeFactory.Sevices.Sevices
                 employee.FirstName = employeeWebData.FirstName;
                 employee.LastName = employeeWebData.LastName;
                 employee.Email = employeeWebData.Email;
-                employee.Roles = roles.Select(x => new Role() {
-                    Name = x.Name,
-                    Description = x.Description
-                }).ToList();
+                //employee.Roles = roles.Select(x => new Role() {
+                //    Name = x.Name,
+                //    Description = x.Description
+                //}).ToList();
             }
             roles.Clear();
 
