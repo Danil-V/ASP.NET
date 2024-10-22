@@ -1,12 +1,17 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PromoCodeFactory.Core.Abstractions.Repositories;
 using PromoCodeFactory.Core.Domain.Administration;
 using PromoCodeFactory.Core.Domain.PromoCodeManagement;
 using PromoCodeFactory.DataAccess.Data;
+using PromoCodeFactory.DataAccess.EntityFramework;
 using PromoCodeFactory.DataAccess.Repositories;
+using PromoCodeFactory.Services.Implementations;
+using PromoCodeFactory.Services.Interfaces;
+using System;
 
 namespace PromoCodeFactory.WebHost
 {
@@ -14,9 +19,29 @@ namespace PromoCodeFactory.WebHost
     {
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
+            // Чтение строки подключения из appsettings.json:
+            var connectionString = Configuration.GetConnectionString("SQLite");
+            // Настройка контекста базы данных:
+            services.ConfigureContext(connectionString);
             services.AddControllers();
+
+            // Для сервиса работы с Customer (CreateCustomer)
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                // Указываем сериализатору использовать обработку циклов с помощью ReferenceHandler.Preserve, который позволяет сериализовать циклы объектов.
+                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+                options.JsonSerializerOptions.WriteIndented = true; // Необязательно: для форматирования JSON с отступами
+            });
+
             services.AddScoped(typeof(IRepository<Employee>), (x) =>
                 new InMemoryRepository<Employee>(FakeDataFactory.Employees));
             services.AddScoped(typeof(IRepository<Role>), (x) =>
@@ -25,6 +50,12 @@ namespace PromoCodeFactory.WebHost
                 new InMemoryRepository<Preference>(FakeDataFactory.Preferences));
             services.AddScoped(typeof(IRepository<Customer>), (x) =>
                 new InMemoryRepository<Customer>(FakeDataFactory.Customers));
+
+
+            services.AddScoped<IRepository<PromoCode>, EfRepository<PromoCode>>();
+            services.AddScoped<IRepository<Preference>, EfRepository<Preference>>();
+            services.AddScoped<IRepository<Customer>, EfRepository<Customer>>();
+            services.AddScoped<IRepository<CustomerPreference>, EfRepository<CustomerPreference>>();
 
             services.AddOpenApiDocument(options =>
             {

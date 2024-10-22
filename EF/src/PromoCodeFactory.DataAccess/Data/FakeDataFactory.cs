@@ -8,7 +8,7 @@ namespace PromoCodeFactory.DataAccess.Data
 {
     public static class FakeDataFactory
     {
-        public static IEnumerable<Employee> Employees => new List<Employee>()
+        public static IList<Employee> Employees => new List<Employee>()
         {
             new Employee()
             {
@@ -16,7 +16,7 @@ namespace PromoCodeFactory.DataAccess.Data
                 Email = "owner@somemail.ru",
                 FirstName = "Иван",
                 LastName = "Сергеев",
-                Role = Roles.FirstOrDefault(x => x.Name == "Admin"),
+                RoleId = Roles.FirstOrDefault(x => x.Name == "Admin").Id,
                 AppliedPromocodesCount = 5
             },
             new Employee()
@@ -25,12 +25,12 @@ namespace PromoCodeFactory.DataAccess.Data
                 Email = "andreev@somemail.ru",
                 FirstName = "Петр",
                 LastName = "Андреев",
-                Role = Roles.FirstOrDefault(x => x.Name == "PartnerManager"),
+                RoleId = Roles.FirstOrDefault(x => x.Name == "PartnerManager").Id,
                 AppliedPromocodesCount = 10
-            },
+            }
         };
 
-        public static IEnumerable<Role> Roles => new List<Role>()
+        public static IList<Role> Roles => new List<Role>()
         {
             new Role()
             {
@@ -46,7 +46,7 @@ namespace PromoCodeFactory.DataAccess.Data
             }
         };
 
-        public static IEnumerable<Preference> Preferences => new List<Preference>()
+        public static IList<Preference> Preferences => new List<Preference>()
         {
             new Preference()
             {
@@ -65,25 +65,61 @@ namespace PromoCodeFactory.DataAccess.Data
             }
         };
 
-        public static IEnumerable<Customer> Customers
+        public static IList<PromoCode> PromoCodes => new List<PromoCode>()
         {
-            get
+            new PromoCode()
             {
-                var customerId = Guid.Parse("a6c8c6b1-4349-45b0-ab31-244740aaf0f0");
-                var customers = new List<Customer>()
+                Id = Guid.Parse("53729346-a368-4eeb-8bfa-cc69b6050d21"),
+                Code = "EASY PEASY -20% OFF",
+                ServiceInfo = "Скидка для сотрудников",
+                BeginDate = DateTime.Now,
+                EndDate = DateTime.Today.AddDays(14),
+                PartnerName = "Иван Петров",
+                PreferenceId = Guid.Parse("ef7f299f-92d7-459f-896e-078ed53ef99c"),
+                CustomerPreferences = new List<CustomerPreference>().Select(c => new CustomerPreference()
                 {
-                    new Customer()
-                    {
-                        Id = customerId,
-                        Email = "ivan_sergeev@mail.ru",
-                        FirstName = "Иван",
-                        LastName = "Петров",
-                        //TODO: Добавить предзаполненный список предпочтений
-                    }
-                };
-
-                return customers;
+                    CustomerId = c.CustomerId,
+                    PreferenceId = c.PreferenceId
+                }).ToList(),
+                CustomerId = Guid.Parse("451423d5-d8d5-4a11-9c7b-eb9f14e1a72f")
             }
-        }
+        };
+
+        public static IList<Customer> Customers => new List<Customer>()
+        {
+            new Customer()
+            {
+                Id = Guid.Parse("451423d5-d8d5-4a11-9c7b-eb9f14e1a72f"),
+                Email = "ivan_sergeev@mail.ru",
+                FirstName = "Иван",
+                LastName = "Петров",
+                CustomerPreferences = new List<CustomerPreference>().Select(c => new CustomerPreference()
+                {
+                    CustomerId = c.CustomerId,
+                    PreferenceId = c.PreferenceId
+                }).ToList()
+            }
+        };
+
+        public static List<CustomerPreference> CustomerPreferences => new List<CustomerPreference>
+        {
+            new CustomerPreference
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = Customers[0].Id,
+                PreferenceId = Preferences[0].Id
+            },
+            new CustomerPreference() {
+                Id = Guid.NewGuid(),
+                CustomerId = Customers[0].Id,
+                PreferenceId = Preferences[1].Id
+            },
+            new CustomerPreference
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = Customers[0].Id,
+                PreferenceId = Preferences[2].Id
+            }
+        };
     }
 }
