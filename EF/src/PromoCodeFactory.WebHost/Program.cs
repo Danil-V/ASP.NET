@@ -11,13 +11,13 @@ namespace PromoCodeFactory.WebHost
         {
             var host = CreateHostBuilder(args).Build();
 
-            //using (var scope = host.Services.CreateScope())
-            //{
-            //    //var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            //    //db.Database.EnsureDeleted();
-            //    //db.Database.EnsureCreated();
-            //    //SeedData(db);
-            //}
+            using (var scope = host.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                db.Database.EnsureDeleted();
+                db.Database.EnsureCreated();
+                SeedData(db);
+            }
             host.Run();
         }
 

@@ -109,7 +109,7 @@ namespace PromoCodeFactory.WebHost.Controllers
         public async Task<ActionResult> DeleteCustomer(Guid id) {
             var result = await _customerService.DeleteCustomerAsync(id);
             if (result == false)
-                return NoContent();
+                return NotFound();
             else
                 return Ok();
         }

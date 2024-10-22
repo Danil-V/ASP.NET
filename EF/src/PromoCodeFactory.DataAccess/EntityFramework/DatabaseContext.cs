@@ -29,14 +29,14 @@ namespace PromoCodeFactory.Core.DataAccess.EntityFramework
                 .HasOne(e => e.Role)            // Указывает, что Employee имеет одну Role
                 .WithMany(r => r.Employees)     // Указывает, что Role может иметь много Employees
                 .HasForeignKey(e => e.RoleId)   // Указывает, что RoleId - это внешний ключ
-                .IsRequired()                  // Указывает, что роль обязательна для каждого сотрудника
-                .OnDelete(DeleteBehavior.Restrict); // Это свойство предотвратит удаление связанных данных при миграции
+                .IsRequired();                  // Указывает, что роль обязательна для каждого сотрудника
+                                                //.OnDelete(DeleteBehavior.Restrict); // Используем при миграции - это свойство предотвратит удаление связанных данных при миграции
 
             modelBuilder.Entity<PromoCode>()
                 .HasOne(e => e.Preference)
                 .WithMany(r => r.PromoCodes)
-                .HasForeignKey(e => e.PreferenceId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(e => e.PreferenceId);
+                //.OnDelete(DeleteBehavior.Cascade);
 
             // Настройка маппинга для связи Customer и Preference (Many-to-Many)
             modelBuilder.Entity<CustomerPreference>()
@@ -44,13 +44,13 @@ namespace PromoCodeFactory.Core.DataAccess.EntityFramework
             modelBuilder.Entity<CustomerPreference>()
                 .HasOne(cp => cp.Customer)
                 .WithMany(c => c.CustomerPreferences)
-                .HasForeignKey(cp => cp.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(cp => cp.CustomerId);
+                //.OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<CustomerPreference>()
                 .HasOne(cp => cp.Preference)
                 .WithMany(p => p.CustomerPreferences)
-                .HasForeignKey(cp => cp.PreferenceId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(cp => cp.PreferenceId);
+                //.OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Customer>().Property(c => c.FirstName).HasMaxLength(100);
             modelBuilder.Entity<Customer>().Property(c => c.LastName).HasMaxLength(100);
@@ -62,8 +62,6 @@ namespace PromoCodeFactory.Core.DataAccess.EntityFramework
             modelBuilder.Entity<PromoCode>().Property(pc => pc.Code).HasMaxLength(250);
             modelBuilder.Entity<PromoCode>().Property(pc => pc.ServiceInfo).HasMaxLength(200);
             modelBuilder.Entity<PromoCode>().Property(pc => pc.PartnerName).HasMaxLength(200);
-            
-            
 
 
             var roles = FakeDataFactory.Roles

@@ -16,7 +16,6 @@ namespace PromoCodeFactory.Core.Domain.PromoCodeManagement
         }
         // public string FullName => $"{FirstName} {LastName}";
         public string Email { get; set; }
-        public int AppliedPromocodesCount { get; set; }         // Свойство для доп задания
 
         public virtual ICollection<Preference> Preferences { get; set; } // Связь с Preference
         public virtual ICollection<PromoCode> PromoCodes { get; set; }  // Связь с PromoCode
