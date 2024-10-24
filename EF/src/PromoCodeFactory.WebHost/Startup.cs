@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PromoCodeFactory.Core.Abstractions.Repositories;
+using PromoCodeFactory.Core.DataAccess.EntityFramework;
 using PromoCodeFactory.Core.Domain.Administration;
 using PromoCodeFactory.Core.Domain.PromoCodeManagement;
 using PromoCodeFactory.DataAccess.Data;
-using PromoCodeFactory.DataAccess.EntityFramework;
 using PromoCodeFactory.DataAccess.Repositories;
 
 
@@ -28,10 +29,11 @@ namespace PromoCodeFactory.WebHost
         {
             // Чтение строки подключения из appsettings.json:
             var connectionString = Configuration.GetConnectionString("SQLite");
-            // Настройка контекста базы данных:
-            services.ConfigureContext(connectionString);
-            services.AddControllers();
+            // Настройка контекста для базы данных:
+            services.AddDbContext<DatabaseContext>(optionsBuilder => optionsBuilder
+                   .UseSqlite(connectionString));
 
+            services.AddControllers();
             // Для сервиса работы с Customer (CreateCustomer)
             services.AddControllers().AddJsonOptions(options =>
             {
