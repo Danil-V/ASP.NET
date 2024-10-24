@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PromoCodeFactory.Core.Abstractions.Repositories;
+﻿using PromoCodeFactory.Core.Abstractions.Repositories;
 using PromoCodeFactory.Core.Domain.PromoCodeManagement;
 using PromoCodeFactory.Core.Domain.PromoCodeManagement.CustomerService;
 using PromoCodeFactory.Services.Interfaces;
@@ -24,29 +23,33 @@ namespace PromoCodeFactory.Services.Implementations
         }
 
 
-        public async Task<IEnumerable<CustomerShort>> GetAllCustomersAsync() {
-            var customers = await _customerRepository.GetAllAsync();
-            var customersList = customers.Select(x =>
-                new CustomerShort() {
-                    Id = x.Id,
-                    FirstName = x.FirstName,
-                    LastName = x.LastName,
-                    Email = x.Email
-                }).ToList();
-            return customersList;
+        public async Task<IEnumerable<CustomerShort>> GetAllCustomersAsync(CancellationToken cancellationToken) {
+            var customers = await _customerRepository.GetAllAsync(cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+                return (IEnumerable<CustomerShort>)customers;
+
+                var customersList = customers.Select(x =>
+                    new CustomerShort()
+                    {
+                        Id = x.Id,
+                        FirstName = x.FirstName,
+                        LastName = x.LastName,
+                        Email = x.Email
+                    }).ToList();
+                return customersList;
         }
 
 
-        public async Task<CustomerDto> GetCustomerByIdAsync(Guid id) {
+        public async Task<CustomerDto> GetCustomerByIdAsync(Guid id, CancellationToken cancellationToken) {
             var promoCodes = new List<PromoCode>();
-            var codes = await _promoCodeRepository.GetAllAsync(); // Вызов из-за Lazy работы EF (без нее не работает, так как нет обращения к данному репозиторию)
-            var customer = await _customerRepository.GetByIdAsync(id, c => c.CustomerPreferences);
+            var codes = await _promoCodeRepository.GetAllAsync(cancellationToken); // Вызов из-за Lazy работы EF (без нее не работает, так как нет обращения к данному репозиторию)
+            var customer = await _customerRepository.GetByIdAsync(id, cancellationToken, c => c.CustomerPreferences);
             if (customer == null)
                 return null;
 
             // Загрузка промокодов через предпочтения:
             foreach (var customerPreference in customer.CustomerPreferences) {
-                var preferenceWithPromoCodes = await _preferenceRepository.GetByIdAsync(customerPreference.PreferenceId);
+                var preferenceWithPromoCodes = await _preferenceRepository.GetByIdAsync(customerPreference.PreferenceId, cancellationToken);
 
                 if (preferenceWithPromoCodes != null && preferenceWithPromoCodes.PromoCodes != null)
                     promoCodes.AddRange(preferenceWithPromoCodes.PromoCodes);
@@ -74,18 +77,18 @@ namespace PromoCodeFactory.Services.Implementations
         }
 
 
-        public async Task<Customer> CreateCustomerAsync(CreateOrEditCustomerDto request) {
+        public async Task<Customer> CreateCustomerAsync(CreateOrEditCustomerDto request, CancellationToken cancellationToken) {
             var customer = new Customer {
                 Id = Guid.NewGuid(),
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Email = request.Email
             };
-            await _customerRepository.CreateAsync(customer);
+            await _customerRepository.CreateAsync(customer, cancellationToken);
 
             // Если указаны предпочтения, связываем их с клиентом через CustomerPreference:
             if (request.PreferenceIds != null && request.PreferenceIds.Any()) {
-                var preferences = await _preferenceRepository.GetAllAsync();
+                var preferences = await _preferenceRepository.GetAllAsync(cancellationToken);
                 var selectedPreferences = preferences
                     .Where(p => request.PreferenceIds.Contains(p.Id))
                     .ToList();
@@ -98,7 +101,7 @@ namespace PromoCodeFactory.Services.Implementations
                             CustomerId = customer.Id,
                             PreferenceId = preference.Id
                         };
-                        await _customerPreferenceRepository.CreateAsync(customerPreference);
+                        await _customerPreferenceRepository.CreateAsync(customerPreference, cancellationToken);
                     }
                 }
             }
@@ -106,18 +109,18 @@ namespace PromoCodeFactory.Services.Implementations
         }
 
 
-        public async Task<CustomerShortEdited> EditCustomerAsync(Guid id, CreateOrEditCustomerDto request) {
-            var customer = await _customerRepository.GetByIdAsync(id);
+        public async Task<CustomerShortEdited> EditCustomerAsync(Guid id, CreateOrEditCustomerDto request, CancellationToken cancellationToken) {
+            var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
             if (customer == null)
                 return null;
 
             customer.FirstName = request.FirstName;
             customer.LastName = request.LastName;
             customer.Email = request.Email;
-            await _customerRepository.UpdateAsync(customer);
+            await _customerRepository.UpdateAsync(customer, cancellationToken);
 
             // Обработка предпочтений клиента
-            await UpdateCustomerPreferences(customer, request.PreferenceIds);
+            await UpdateCustomerPreferences(customer, request.PreferenceIds, cancellationToken);
 
             return new CustomerShortEdited {
                 Id = customer.Id,
@@ -132,30 +135,30 @@ namespace PromoCodeFactory.Services.Implementations
         }
 
 
-        public async Task<bool> DeleteCustomerAsync(Guid id) {
-            var customer = await _customerRepository.GetByIdAsync(id);
+        public async Task<bool> DeleteCustomerAsync(Guid id, CancellationToken cancellationToken) {
+            var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
             if (customer == null)
                 return false;
 
             // Удаление промокодов, выданных клиенту:
-            var promoCodes = await _promoCodeRepository.GetAllAsync();
+            var promoCodes = await _promoCodeRepository.GetAllAsync(cancellationToken);
             foreach (var promoCode in promoCodes.Where(pc => pc.CustomerId == id)) {
-                await _promoCodeRepository.DeleteAsync(promoCode.Id);
+                await _promoCodeRepository.DeleteAsync(promoCode.Id, cancellationToken);
             }
 
-            await _customerRepository.DeleteAsync(id);
+            await _customerRepository.DeleteAsync(id, cancellationToken);
             return true;
         }
 
 
-        private async Task UpdateCustomerPreferences(Customer customer, List<Guid> preferenceIds) {
-            var customerPreferences = await _customerPreferenceRepository.GetAllAsync();
+        private async Task UpdateCustomerPreferences(Customer customer, List<Guid> preferenceIds, CancellationToken cancellationToken) {
+            var customerPreferences = await _customerPreferenceRepository.GetAllAsync(cancellationToken);
             foreach (var customerPreference in customerPreferences.Where(pc => pc.CustomerId == customer.Id)) {
-                await _customerPreferenceRepository.DeleteAsync(customerPreference.Id);
+                await _customerPreferenceRepository.DeleteAsync(customerPreference.Id, cancellationToken);
             }
 
             // Получаем новые предпочтения:
-            var preferences = await _preferenceRepository.GetAllAsync();
+            var preferences = await _preferenceRepository.GetAllAsync(cancellationToken);
             var selectedPreferences = preferences
                 .Where(p => preferenceIds.Contains(p.Id))   // Проверяем, содержится ли значение p.Id в коллекции preferenceIds
                 .ToList();
@@ -169,7 +172,7 @@ namespace PromoCodeFactory.Services.Implementations
                         CustomerId = customer.Id,
                         PreferenceId = preference.Id
                     };
-                    await _customerPreferenceRepository.CreateAsync(customerPreference);
+                    await _customerPreferenceRepository.CreateAsync(customerPreference, cancellationToken);
                 }
             }
         }

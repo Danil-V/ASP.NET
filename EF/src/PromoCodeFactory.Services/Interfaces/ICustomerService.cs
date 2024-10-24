@@ -5,11 +5,11 @@ namespace PromoCodeFactory.Services.Interfaces
 {
     public interface ICustomerService
     {
-        Task<IEnumerable<CustomerShort>> GetAllCustomersAsync();
+        Task<IEnumerable<CustomerShort>> GetAllCustomersAsync(CancellationToken cancellationToken);
 
-        Task<CustomerDto> GetCustomerByIdAsync(Guid id);
-        Task<Customer> CreateCustomerAsync(CreateOrEditCustomerDto request);
-        Task<CustomerShortEdited> EditCustomerAsync(Guid id, CreateOrEditCustomerDto request);
-        Task<bool> DeleteCustomerAsync(Guid id);
+        Task<CustomerDto> GetCustomerByIdAsync(Guid id, CancellationToken cancellationToken);
+        Task<Customer> CreateCustomerAsync(CreateOrEditCustomerDto request, CancellationToken cancellationToken);
+        Task<CustomerShortEdited> EditCustomerAsync(Guid id, CreateOrEditCustomerDto request, CancellationToken cancellationToken);
+        Task<bool> DeleteCustomerAsync(Guid id, CancellationToken cancellationToken);
     }
 }

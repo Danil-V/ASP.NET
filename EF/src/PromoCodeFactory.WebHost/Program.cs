@@ -2,21 +2,20 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PromoCodeFactory.Core.DataAccess.EntityFramework;
+using PromoCodeFactory.DataAccess.Data;
 
 namespace PromoCodeFactory.WebHost
 {
     public class Program
     {
-        public static void Main(string[] args)
-        {
+        public static void Main(string[] args) {
             var host = CreateHostBuilder(args).Build();
 
-            using (var scope = host.Services.CreateScope())
-            {
+            using (var scope = host.Services.CreateScope()) {
                 var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
                 db.Database.EnsureDeleted();
                 db.Database.EnsureCreated();
-                SeedData(db);
+                db.SeedData(/*db*/);
             }
             host.Run();
         }
@@ -26,10 +25,5 @@ namespace PromoCodeFactory.WebHost
                 .ConfigureWebHostDefaults(webBuilder => {
                     webBuilder.UseStartup<Startup>();
                 });
-
-        private static void SeedData(DatabaseContext db)
-        {
-            db.SaveChanges();
-        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PromoCodeFactory.Core.Abstractions.Repositories;
@@ -18,17 +19,17 @@ namespace PromoCodeFactory.DataAccess.Repositories
             Data = new List<T>(data);
         }
 
-        public Task<IEnumerable<T>> GetAllAsync()
+        public Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult<IEnumerable<T>>(Data);
         }
 
-        public Task<T> GetByIdAsync(Guid id)
+        public Task<T> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return Task.FromResult(Data.FirstOrDefault(x => x.Id == id));
         }
 
-        public async Task<T> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includes)
+        public async Task<T> GetByIdAsync(Guid id, CancellationToken cancellationToken, params Expression<Func<T, object>>[] includes)
         {
            var query = Data.AsQueryable();
 
@@ -42,7 +43,7 @@ namespace PromoCodeFactory.DataAccess.Repositories
             return await Task.FromResult(query.FirstOrDefault(e => EF.Property<Guid>(e, "Id") == id));
         }
 
-        public Task<T> CreateAsync(T entity)
+        public Task<T> CreateAsync(T entity, CancellationToken cancellationToken)
         {
             if (entity != null)
             {
@@ -51,7 +52,7 @@ namespace PromoCodeFactory.DataAccess.Repositories
             return Task.FromResult(entity);
         }
 
-        public Task<T> UpdateAsync(T updateEntity)
+        public Task<T> UpdateAsync(T updateEntity, CancellationToken cancellationToken)
         {
             if (updateEntity != null)
             {
@@ -68,7 +69,7 @@ namespace PromoCodeFactory.DataAccess.Repositories
             return Task.FromResult<T>(null);
         }
 
-        public Task<bool> DeleteAsync(Guid id)
+        public Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
             var entity = Data.FirstOrDefault(x => x.Id == id);
             if (entity != null)

@@ -9,9 +9,7 @@ using PromoCodeFactory.Core.Domain.PromoCodeManagement;
 using PromoCodeFactory.DataAccess.Data;
 using PromoCodeFactory.DataAccess.EntityFramework;
 using PromoCodeFactory.DataAccess.Repositories;
-using PromoCodeFactory.Services.Implementations;
-using PromoCodeFactory.Services.Interfaces;
-using System;
+
 
 namespace PromoCodeFactory.WebHost
 {
