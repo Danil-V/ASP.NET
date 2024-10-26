@@ -68,8 +68,8 @@ namespace PromoCodeFactory.Services.Implementations
                     Id = pc.Id,
                     Code = pc.Code,
                     ServiceInfo = pc.ServiceInfo,
-                    BeginDate = pc.BeginDate.ToString(("yyyy-MM-dd")),
-                    EndDate = pc.EndDate.ToString(("yyyy-MM-dd")),
+                    BeginDate = pc.BeginDate.ToString("yyyy-MM-dd"),
+                    EndDate = pc.EndDate.ToString("yyyy-MM-dd"),
                     PartnerName = pc.PartnerName
                 }).ToList()
             };
@@ -139,7 +139,6 @@ namespace PromoCodeFactory.Services.Implementations
             var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
             if (customer == null)
                 return false;
-
             // Удаление промокодов, выданных клиенту:
             var promoCodes = await _promoCodeRepository.GetAllAsync(cancellationToken);
             foreach (var promoCode in promoCodes.Where(pc => pc.CustomerId == id)) {

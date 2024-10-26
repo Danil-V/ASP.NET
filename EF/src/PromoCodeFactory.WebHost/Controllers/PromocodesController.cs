@@ -4,10 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using PromoCodeFactory.Core.Abstractions.Repositories;
 using PromoCodeFactory.Core.Domain.PromoCodeManagement;
-using PromoCodeFactory.Services.Implementations;
 using PromoCodeFactory.WebHost.Models;
 
 namespace PromoCodeFactory.WebHost.Controllers
@@ -46,8 +44,8 @@ namespace PromoCodeFactory.WebHost.Controllers
                 Id = pc.Id,
                 Code = pc.Code,
                 ServiceInfo = pc.ServiceInfo,
-                BeginDate = pc.BeginDate.ToString("o"), // ISO 8601 формат
-                EndDate = pc.EndDate.ToString("o"),     // ISO 8601 формат
+                BeginDate = pc.BeginDate.ToString("yyyy-MM-dd"), // ISO 8601 формат
+                EndDate = pc.EndDate.ToString("yyyy-MM-dd"),     // ISO 8601 формат
                 PartnerName = pc.PartnerName
             }).ToList();
 
@@ -61,7 +59,6 @@ namespace PromoCodeFactory.WebHost.Controllers
         /// <summary>
         /// Создать промокод и выдать его клиентам с указанным предпочтением
         /// </summary>
-        /// <param name="id">ID предпочтения</param>
         /// <param name="request">Запрос для создания промокода.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>Результат операции.</returns>
@@ -69,23 +66,22 @@ namespace PromoCodeFactory.WebHost.Controllers
         public async Task<IActionResult> GivePromoCodesToCustomersWithPreferenceAsync(GivePromoCodeRequest request, CancellationToken cancellationToken) {
             var customers = await _customerRepository.GetAllAsync(cancellationToken);
             var customerPreferences = await _customerPreferencesRepository.GetAllAsync(cancellationToken);
-            var customerForCode = customerPreferences.Where(p => p.PreferenceId == request.PreferenceId).ToList();
+            var customerPreferenceForCode = customerPreferences.Where(p => p.PreferenceId == request.PreferenceId).ToList();
 
-            var promoCode = new PromoCode {
-                Id = Guid.NewGuid(),
-                Code = request.PromoCode,
-                ServiceInfo = request.ServiceInfo,
-                BeginDate = DateTime.Parse(request.BeginDate),
-                EndDate = DateTime.Parse(request.EndDate),
-                PartnerName = request.PartnerName,
-                PreferenceId = request.PreferenceId
-            };
 
             foreach (var c in customers) {
-                foreach (var preference in customerForCode) {
+                foreach (var preference in customerPreferenceForCode) {
                     if (c.Id == preference.CustomerId) {
-                        promoCode.CustomerId = c.Id;
-                        promoCode.PreferenceId = preference.PreferenceId;
+                        var promoCode = new PromoCode {
+                            Id = Guid.NewGuid(),
+                            Code = request.PromoCode,
+                            ServiceInfo = request.ServiceInfo,
+                            BeginDate = DateTime.Parse(request.BeginDate),
+                            EndDate = DateTime.Parse(request.EndDate),
+                            PartnerName = request.PartnerName,
+                            CustomerId = c.Id,
+                            PreferenceId = preference.PreferenceId
+                        };
                         await _promoCodeRepository.CreateAsync(promoCode, cancellationToken);
                     }
                 }

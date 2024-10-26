@@ -11,11 +11,12 @@ namespace PromoCodeFactory.WebHost
         public static void Main(string[] args) {
             var host = CreateHostBuilder(args).Build();
 
-            using (var scope = host.Services.CreateScope()) {
+            using (var scope = host.Services.CreateScope())
+            {
                 var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
                 db.Database.EnsureDeleted();
                 db.Database.EnsureCreated();
-                db.SeedData(/*db*/);
+                db.SeedData();
             }
             host.Run();
         }

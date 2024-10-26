@@ -20,13 +20,11 @@ namespace PromoCodeFactory.WebHost
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public IConfiguration Configuration { get; }
 
-        public Startup(IConfiguration configuration)
-        {
+        public Startup(IConfiguration configuration) {
             Configuration = configuration;
         }
 
-        public void ConfigureServices(IServiceCollection services)
-        {
+        public void ConfigureServices(IServiceCollection services) {
             // Чтение строки подключения из appsettings.json:
             var connectionString = Configuration.GetConnectionString("SQLite");
             // Настройка контекста для базы данных:
@@ -35,8 +33,7 @@ namespace PromoCodeFactory.WebHost
 
             services.AddControllers();
             // Для сервиса работы с Customer (CreateCustomer)
-            services.AddControllers().AddJsonOptions(options =>
-            {
+            services.AddControllers().AddJsonOptions(options => {
                 // Указываем сериализатору использовать обработку циклов с помощью ReferenceHandler.Preserve, который позволяет сериализовать циклы объектов.
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
                 options.JsonSerializerOptions.WriteIndented = true; // Необязательно: для форматирования JSON с отступами
@@ -57,8 +54,7 @@ namespace PromoCodeFactory.WebHost
             services.AddScoped<IRepository<Customer>, EfRepository<Customer>>();
             services.AddScoped<IRepository<CustomerPreference>, EfRepository<CustomerPreference>>();
 
-            services.AddOpenApiDocument(options =>
-            {
+            services.AddOpenApiDocument(options => {
                 options.Title = "PromoCode Factory API Doc";
                 options.Version = "1.0";
             });
@@ -67,18 +63,14 @@ namespace PromoCodeFactory.WebHost
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
+            if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
-            }
-            else
-            {
+            } else {
                 app.UseHsts();
             }
 
             app.UseOpenApi();
-            app.UseSwaggerUi(x =>
-            {
+            app.UseSwaggerUi(x => {
                 x.DocExpansion = "list";
             });
 
@@ -86,8 +78,7 @@ namespace PromoCodeFactory.WebHost
 
             app.UseRouting();
 
-            app.UseEndpoints(endpoints =>
-            {
+            app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
             });
         }
