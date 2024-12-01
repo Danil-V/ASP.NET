@@ -1,0 +1,63 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    # 1. Checkout репозиторий
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Установка .NET SDK
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.0'
+
+    # 3. Восстановление зависимостей и сборка проектов
+    - name: Build and Test EF
+      working-directory: ./EF
+      run: |
+        dotnet restore
+        dotnet build --configuration Release
+        dotnet ef migrations script
+        dotnet test --configuration Release
+
+    - name: Build and Test Base
+      working-directory: ./Base
+      run: |
+        dotnet restore
+        dotnet build --configuration Release
+        dotnet test --configuration Release
+
+    # 4. Запуск Unit-тестов
+    - name: Run Unit Tests
+      working-directory: ./UnitTests
+      run: |
+        dotnet restore
+        dotnet build --configuration Release
+        dotnet test --configuration Release

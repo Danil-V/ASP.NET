@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PromoCodeFactory.Core.Domain.Administration;
 using PromoCodeFactory.Core.Domain.PromoCodeManagement;
-using PromoCodeFactory.DataAccess.Data;
-using System.Linq;
 
 namespace PromoCodeFactory.Core.DataAccess.EntityFramework
 {
@@ -62,16 +60,6 @@ namespace PromoCodeFactory.Core.DataAccess.EntityFramework
             modelBuilder.Entity<PromoCode>().Property(pc => pc.Code).HasMaxLength(250);
             modelBuilder.Entity<PromoCode>().Property(pc => pc.ServiceInfo).HasMaxLength(200);
             modelBuilder.Entity<PromoCode>().Property(pc => pc.PartnerName).HasMaxLength(200);
-        }
-
-        // Настройка провайдера базы данных для миграций
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                // Укажите здесь провайдер базы данных, например, SQLite:
-                optionsBuilder.UseSqlite("Data Source=PromoCodeFactory.db");
-            }
         }
     }
 }

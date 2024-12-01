@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PromoCodeFactory.Core.DataAccess.EntityFramework;
 using PromoCodeFactory.DataAccess.Data;
+using System;
 
 namespace PromoCodeFactory.WebHost
 {
@@ -14,8 +16,13 @@ namespace PromoCodeFactory.WebHost
             using (var scope = host.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-                db.Database.EnsureDeleted();
-                db.Database.EnsureCreated();
+                //db.Database.EnsureDeleted();
+                //db.Database.EnsureCreated();
+             
+                try {
+                    db.Database.Migrate();
+                } catch (Exception ex) { Console.WriteLine($"Error during migration: {ex.Message}"); }
+                
                 db.SeedData();
             }
             host.Run();
